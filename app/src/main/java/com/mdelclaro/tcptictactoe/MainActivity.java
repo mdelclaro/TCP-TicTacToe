@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
 
-            Log.i("INFO", "RESPONSE: " + values[0]);
+            Log.i("INFO", "RESPONSE from Server: " + values[0]);
 
             String imageView = "imageView" + values[0];
             int resID = getResources().getIdentifier(imageView, "id", getPackageName());
