@@ -8,25 +8,17 @@ import java.net.Socket;
 public class TcpClient {
 
     private String serverMessage;
-    public static final String SERVERIP = "192.168.0.200"; //your computer IP address
-    public static final int SERVERPORT = 8888;
+    private static final String SERVERIP = "192.168.2.108";
+    private static final int SERVERPORT = 8888;
     private OnMessageReceived mMessageListener = null;
     private boolean mRun = false;
-
-    PrintWriter out;
+    private PrintWriter out;
     BufferedReader in;
 
-    /**
-     *  Constructor of the class. OnMessagedReceived listens for the messages received from server
-     */
     public TcpClient(OnMessageReceived listener) {
         mMessageListener = listener;
     }
 
-    /**
-     * Sends the message entered by client to the server
-     * @param message text entered by client
-     */
     public void sendMessage(String message) {
 
         if (out != null && !out.checkError()) {
@@ -88,8 +80,7 @@ public class TcpClient {
                 Log.e("TCP", "S: Error", e);
 
             } finally {
-                //the socket must be closed. It is not possible to reconnect to this socket
-                // after it is closed, which means a new socket instance has to be created.
+
                 socket.close();
             }
 

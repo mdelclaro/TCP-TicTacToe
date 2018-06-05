@@ -2,6 +2,7 @@ package com.mdelclaro.tcptictactoe;
 
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,17 +12,25 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
+public
+class MainActivity extends AppCompatActivity {
 
     // 0: microsoft, 1: linux, 2: empty
 
     TcpClient tcpClient;
+    String ip;
 
     ImageView slot;
 
     int activePlayer = 0, tappedSlot;
 
-    boolean gameActive = true;
+    boolean gameActive = true, startFlag = false;
 
     int[] gameState = {2, 2, 2, 2, 2, 2, 2, 2, 2};
 
@@ -36,6 +45,10 @@ public class MainActivity extends AppCompatActivity {
         new ConnectTask().execute("");
 
         Log.i("INFO", "tcpClient.run");
+
+        ip = getLocalIpAddress();
+
+        Log.i("IP", ip);
 
         final Handler handler = new Handler();
 
@@ -56,19 +69,23 @@ public class MainActivity extends AppCompatActivity {
 
         tappedSlot = Integer.parseInt(slot.getTag().toString());
 
-        if (tcpClient != null) {
+        if (startFlag) {
 
-            String msg = slot.getTag().toString();
+            if (tcpClient != null) {
 
-            msg = msg.substring(0, msg.length());
+                String msg = slot.getTag().toString();
 
-            tcpClient.sendMessage(msg);
+                msg = msg.substring(0, msg.length());
 
-            Log.i("INFO", "Slot Sent: " + msg);
+                tcpClient.sendMessage(msg);
 
-        } else {
+                Log.i("INFO", "Slot Sent: " + msg);
 
-            Log.i("INFO", "TcpClient null");
+            } else {
+
+                Log.i("INFO", "TcpClient null");
+            }
+
         }
 
     }
@@ -256,6 +273,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public static String getLocalIpAddress() {
+
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     public class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
         @Override
@@ -281,39 +316,45 @@ public class MainActivity extends AppCompatActivity {
 
             Log.i("INFO", "RESPONSE from Server: " + values[0]);
 
-            String imageView = "imageView" + values[0];
-            int resID = getResources().getIdentifier(imageView, "id", getPackageName());
+            if (values[0].equals("ok")) startFlag = true;
 
-            ImageView slot = findViewById(resID);
+            else {
 
-            Log.i("DEBUG", imageView);
+                String imageView = "imageView" + values[0];
+                int resID = getResources().getIdentifier(imageView, "id", getPackageName());
 
-            if (gameState[Integer.parseInt(values[0])] == 2 && gameActive) {
+                ImageView slot = findViewById(resID);
 
-                gameState[Integer.parseInt(values[0])] = activePlayer;
+                Log.i("DEBUG", imageView);
 
-                slot.setTranslationY(-1500);
+                if (gameState[Integer.parseInt(values[0])] == 2 && gameActive) {
 
-                if (activePlayer == 0) {
+                    gameState[Integer.parseInt(values[0])] = activePlayer;
 
-                    slot.setImageResource(R.drawable.windows);
+                    slot.setTranslationY(-1500);
 
-                    activePlayer = 1;
+                    if (activePlayer == 0) {
 
-                } else {
+                        slot.setImageResource(R.drawable.windows);
 
-                    slot.setImageResource(R.drawable.linux);
+                        activePlayer = 1;
 
-                    activePlayer = 0;
+                    } else {
+
+                        slot.setImageResource(R.drawable.linux);
+
+                        activePlayer = 0;
+
+                    }
+
+                    slot.animate().translationYBy(1500).setDuration(300);
+
+                    checkState();
 
                 }
 
-                slot.animate().translationYBy(1500).setDuration(300);
-
-                checkState();
-
             }
+
         }
     }
-
 }
