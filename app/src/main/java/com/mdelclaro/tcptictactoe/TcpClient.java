@@ -10,7 +10,7 @@ public class TcpClient {
     private String serverMessage;
     private static final String SERVERIP = "192.168.2.108";
     private static final int SERVERPORT = 8888;
-    private OnMessageReceived mMessageListener = null;
+    private OnMessageReceived mMessageListener;
     private boolean mRun = false;
     private PrintWriter out;
     BufferedReader in;
@@ -53,13 +53,10 @@ public class TcpClient {
                 //send the message to the server
                 out = new PrintWriter(new BufferedWriter(osw), true);
 
-                //sendMessage("teste");
-                Log.e("TCP Client", "C: Sent.");
-
-                Log.e("TCP Client", "C: Done.");
-
                 //receive the message which the server sends back
                 in = new BufferedReader(isr);
+
+                Log.e("TCP Client", "C: Done.");
 
                 //in this while the client listens for the messages sent by the server
                 while (mRun) {

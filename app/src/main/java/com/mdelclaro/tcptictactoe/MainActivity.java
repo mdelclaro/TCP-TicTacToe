@@ -56,7 +56,7 @@ class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                //
+                tcpClient.sendMessage("ack");
 
             }
         }, 2000);
@@ -69,23 +69,19 @@ class MainActivity extends AppCompatActivity {
 
         tappedSlot = Integer.parseInt(slot.getTag().toString());
 
-        if (startFlag) {
+        if (tcpClient != null) {
 
-            if (tcpClient != null) {
+            String msg =  ip + ";" + slot.getTag().toString();
 
-                String msg = slot.getTag().toString();
+            msg = msg.substring(0, msg.length());
 
-                msg = msg.substring(0, msg.length());
+            tcpClient.sendMessage(msg);
 
-                tcpClient.sendMessage(msg);
+            Log.i("INFO", "Slot Sent: " + msg);
 
-                Log.i("INFO", "Slot Sent: " + msg);
+        } else {
 
-            } else {
-
-                Log.i("INFO", "TcpClient null");
-            }
-
+            Log.i("INFO", "TcpClient null");
         }
 
     }
@@ -112,7 +108,7 @@ class MainActivity extends AppCompatActivity {
 
                 winner = winner.substring(0, winner.length());
 
-                if (tcpClient != null) {
+                /*if (tcpClient != null) {
 
                     tcpClient.sendMessage(winner);
 
@@ -121,7 +117,7 @@ class MainActivity extends AppCompatActivity {
                 } else {
 
                     Log.i("INFO", "TcpClient null");
-                }
+                }*/
 
                 Button playAgainButton = findViewById(R.id.playAgainButton);
 
@@ -168,7 +164,7 @@ class MainActivity extends AppCompatActivity {
 
                         winner = winner.substring(0, winner.length());
 
-                        if (tcpClient != null) {
+                        /*if (tcpClient != null) {
 
                             tcpClient.sendMessage(winner);
 
@@ -177,7 +173,7 @@ class MainActivity extends AppCompatActivity {
                         } else {
 
                             Log.i("INFO", "TcpClient null");
-                        }
+                        }*/
 
                         Button playAgainButton = findViewById(R.id.playAgainButton);
 
@@ -196,7 +192,7 @@ class MainActivity extends AppCompatActivity {
 
                 String winner = "Empate!";
 
-                if (tcpClient != null) {
+                /*if (tcpClient != null) {
 
                     winner = winner.substring(0, winner.length());
 
@@ -207,7 +203,7 @@ class MainActivity extends AppCompatActivity {
                 } else {
 
                     Log.i("INFO", "TcpClient null");
-                }
+                }*/
 
                 Button playAgainButton = findViewById(R.id.playAgainButton);
 
@@ -257,7 +253,7 @@ class MainActivity extends AppCompatActivity {
 
         }
 
-        if (tcpClient != null) {
+        /*if (tcpClient != null) {
 
             String msg = "Jogo Reiniciado";
             msg = msg.substring(0, msg.length());
@@ -269,7 +265,7 @@ class MainActivity extends AppCompatActivity {
         } else {
 
             Log.i("INFO", "TcpClient null");
-        }
+        }*/
 
     }
 
@@ -316,44 +312,38 @@ class MainActivity extends AppCompatActivity {
 
             Log.i("INFO", "RESPONSE from Server: " + values[0]);
 
-            if (values[0].equals("ok")) startFlag = true;
+            String imageView = "imageView" + values[0];
+            int resID = getResources().getIdentifier(imageView, "id", getPackageName());
 
-            else {
+            ImageView slot = findViewById(resID);
 
-                String imageView = "imageView" + values[0];
-                int resID = getResources().getIdentifier(imageView, "id", getPackageName());
+            Log.i("DEBUG", imageView);
 
-                ImageView slot = findViewById(resID);
+            if (gameState[Integer.parseInt(values[0])] == 2 && gameActive) {
 
-                Log.i("DEBUG", imageView);
+                gameState[Integer.parseInt(values[0])] = activePlayer;
 
-                if (gameState[Integer.parseInt(values[0])] == 2 && gameActive) {
+                slot.setTranslationY(-1500);
 
-                    gameState[Integer.parseInt(values[0])] = activePlayer;
+                if (activePlayer == 0) {
 
-                    slot.setTranslationY(-1500);
+                    slot.setImageResource(R.drawable.windows);
 
-                    if (activePlayer == 0) {
+                    activePlayer = 1;
 
-                        slot.setImageResource(R.drawable.windows);
+                } else {
 
-                        activePlayer = 1;
+                    slot.setImageResource(R.drawable.linux);
 
-                    } else {
-
-                        slot.setImageResource(R.drawable.linux);
-
-                        activePlayer = 0;
-
-                    }
-
-                    slot.animate().translationYBy(1500).setDuration(300);
-
-                    checkState();
+                    activePlayer = 0;
 
                 }
 
-            }
+                slot.animate().translationYBy(1500).setDuration(300);
+
+                checkState();
+
+                }
 
         }
     }
