@@ -61,6 +61,7 @@ void main() {
         fflush(stdin);
 
         puts("Socket: Esperando por conexoes...");
+        memset(ip, 0, sizeof(ip));
         c = sizeof(struct sockaddr_in);
             
         //aceita conexão de cliente 1 e cria thread
@@ -95,17 +96,16 @@ void main() {
 				printf("\nIP Anterior: %s", ip_aux);
 				printf("\nNovo IP: %s\n", ip);
 				strcpy(ip_aux, ip);
-
-				//Verifica se mensagem é do tipo "slot"
-				if (strlen(client_message) < 3 && strlen(client_message) > 0) {
-
-					//Manda mensagem de volta para os dois clientes
-					if ((write_size = send(client_sock1, client_message, strlen(client_message), 0)) > 0) 
-						puts("INFO: Mensagem enviada cliente 1");
-			
-					if ((write_size = send(client_sock2, client_message, strlen(client_message), 0)) > 0) 
-						puts("INFO: Mensagem enviada cliente 2");		
-				}
+				
+				//Manda mensagem de volta para os dois clientes
+				if ((write_size = send(client_sock1, client_message, strlen(client_message), 0)) > 0) 
+					puts("\nINFO: Mensagem enviada cliente 1");
+				else perror("Erro.");
+		
+				if ((write_size = send(client_sock2, client_message, strlen(client_message), 0)) > 0) 
+					puts("INFO: Mensagem enviada cliente 2");
+				else perror("Erro.");	
+						
 			} //else printf("O mesmo jogador jogou de novo..");
 		
 			memset(client_message, 0, sizeof(client_message));	 
@@ -122,7 +122,7 @@ void main() {
 
 void receiveMessage(int *client) {
 
-	int read_size, write_size;
+	int read_size, write_size, cmp;
 	char aux_msg[20] = "";
 	char* token;
 		
@@ -130,24 +130,23 @@ void receiveMessage(int *client) {
 		puts("INFO: ack");
 
 	//Recebe msg do cliente
-	while(connected == 1) {
 	
-		if ((read_size = recv(*client , client_message , 20, 0)) > 0) {
-
+		while ((read_size = recv(*client , client_message , sizeof(client_message), 0)) > 0) {
+			
 			fflush(stdout);
 			strcpy(aux_msg, client_message);
 			printf("\nINFO: Recebido -> %s", client_message);
-			
+		
 			token = strtok(aux_msg, ";");
 			strcpy(ip, token);
 			printf("\nIP: %s", ip);
-			
+		
 			token = strtok(NULL, ";");
 			strcpy(client_message, token);
 			printf("\nMsg: %s", client_message);
+			
 		}
 		
-	}
 
 	if (read_size == 0) {
 
